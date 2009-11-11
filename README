@@ -1,0 +1,45 @@
+This is my first Go program. Go is a new experimental language from google:
+
+	http://golang.org/
+
+This program tries to implement The Santa Claus problem, which I learned about
+reading the book Beautiful Code. Read about it online at
+
+	http://www.crsr.net/Notes/SantaClausProblem.html
+
+Unfortunately it does not really implement priorities properly as required by
+the problem definition.
+
+Compile:
+
+	export GOROOT=...
+	export GOARCH=amd64
+	export GOOS=darwin
+	./make.bash
+
+Run:
+
+	./santa
+
+On my macbook, the results are something like this:
+
+	$ time GOROOT=... GOARCH=amd64 GOOS=darwin ./make.bash                                  
+	real    0m0.189s
+	user    0m0.150s
+	sys     0m0.035s
+
+	$ time ./santa 
+	2009/11/11 20:00:41 Done running around after 1000 runs, cleaning up!
+	real    0m0.842s
+	user    0m0.145s
+	sys     0m0.173s
+	
+	$ time ./santa 
+	2009/11/11 20:06:15 Done running around after 10000 runs, cleaning up!
+	real    0m8.013s
+	user    0m1.177s
+	sys     0m1.598s
+
+Code is licensed under the same terms as Go, that is modified BSD. See
+the LICENSE file.
+
