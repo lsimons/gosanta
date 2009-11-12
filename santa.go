@@ -20,8 +20,9 @@ const NUMBER_OF_RUNS = 10000
 //
 
 type Message int
+
 const (
-	READY = iota;
+	READY	= iota;
 	WORK;
 	DONE;
 	STOP;
@@ -33,49 +34,49 @@ const (
 //
 
 type Helper struct {
-	i int;
-	t string;
-	cmd chan Message;
-	status chan Message;
+	i	int;
+	t	string;
+	cmd	chan Message;
+	status	chan Message;
 }
 
 func (h Helper) Exhaust() {
 	//log.Stdoutf("Helper.Exhaust() -- %v:%v is being listened to\n", h.t, h.i);
 	for {
 		select {
-			case msg := <- h.status:
-				switch msg {
-					case DONE:
-						//log.Stdoutf("Helper.Exhaust() -- %v:%v is done\n", h.t, h.i);
-				}
-			default:
-				return;
+		case msg := <-h.status:
+			switch msg {
+			case DONE:
+				//log.Stdoutf("Helper.Exhaust() -- %v:%v is done\n", h.t, h.i);
+			}
+		default:
+			return
 		}
 	}
 }
 
 func (h Helper) Work() {
 	//log.Stdoutf("Helper.Work() -- %v:%v is being told to work\n", h.t, h.i);
-	h.cmd <- WORK;
+	h.cmd <- WORK
 }
 
 func (h Helper) Stop() {
 	//log.Stdoutf("Helper.Stop() -- %v:%v is being told to stop\n", h.t, h.i);
-	h.cmd <- STOP;
+	h.cmd <- STOP
 }
 
 func (h Helper) IsWaiting() bool {
 	select {
-		case msg := <- h.status:
-			switch msg {
-				case READY:
-					//log.Stdoutf("Helper.CheckReady() -- %v:%v is ready\n", h.t, h.i);
-					return true;
-				default:
-					//log.Exitf("Helper.CheckReady() -- %v:%v sent message I don't understand: %v", h.t, h.i, msg);
-			}
+	case msg := <-h.status:
+		switch msg {
+		case READY:
+			//log.Stdoutf("Helper.CheckReady() -- %v:%v is ready\n", h.t, h.i);
+			return true
 		default:
-			//log.Stdoutf("Helper.CheckReady() -- %v:%v didn't say it was ready\n", h.t, h.i);
+			//log.Exitf("Helper.CheckReady() -- %v:%v sent message I don't understand: %v", h.t, h.i, msg);
+		}
+	default:
+		//log.Stdoutf("Helper.CheckReady() -- %v:%v didn't say it was ready\n", h.t, h.i);
 	}
 	return false;
 }
@@ -83,14 +84,14 @@ func (h Helper) IsWaiting() bool {
 func (h Helper) Wait() {
 	for {
 		select {
-			case msg := <- h.status:
-				switch msg {
-					case DONE:
-						//log.Stdoutf("Helper.Join() -- %v:%v is done\n", h.t, h.i);
-						return;
-					default:
-						log.Exitf("Helper.Wait() -- %v:%v sent message I don't understand: %v", h.t, h.i, msg);
-				}
+		case msg := <-h.status:
+			switch msg {
+			case DONE:
+				//log.Stdoutf("Helper.Join() -- %v:%v is done\n", h.t, h.i);
+				return
+			default:
+				log.Exitf("Helper.Wait() -- %v:%v sent message I don't understand: %v", h.t, h.i, msg)
+			}
 		}
 	}
 }
@@ -98,16 +99,16 @@ func (h Helper) Wait() {
 func (h Helper) Join() {
 	for {
 		select {
-			case msg := <- h.status:
-				switch msg {
-					case STOPPED:
-						//log.Stdoutf("Helper.Wait() -- %v:%v has stopped\n", h.t, h.i);
-						return;
-					case DONE:
-						//log.Stdoutf("Helper.Wait() -- %v:%v is done\n", h.t, h.i);
-					default:
-						log.Exitf("Helper.Wait() -- %v:%v sent message I don't understand: %v", h.t, h.i, msg);
-				}
+		case msg := <-h.status:
+			switch msg {
+			case STOPPED:
+				//log.Stdoutf("Helper.Wait() -- %v:%v has stopped\n", h.t, h.i);
+				return
+			case DONE:
+				//log.Stdoutf("Helper.Wait() -- %v:%v is done\n", h.t, h.i);
+			default:
+				log.Exitf("Helper.Wait() -- %v:%v sent message I don't understand: %v", h.t, h.i, msg)
+			}
 		}
 	}
 }
@@ -115,22 +116,22 @@ func (h Helper) Join() {
 func (h Helper) start() {
 	for {
 		select {
-			case h.status <- READY:
-				// we told santa we are ready, wait for a response
-			case msg := <- h.cmd:
-				// santa told us something
-				switch msg {
-					case STOP:
-						//log.Stdoutf("Helper.start() -- %v:%v is stopping\n", h.t, h.i);
-						h.status <- STOPPED;
-						return;
-					case WORK:
-						//log.Stdoutf("Helper.start() -- %v:%v is doing work\n", h.t, h.i);
-						h.status <- DONE;
-						time.Sleep(1000 * 100);
-					default:
-						log.Exitf("Helper.start() -- %v:%v received message I don't understand", h.t, h.i, msg);
-				}
+		case h.status <- READY:
+			// we told santa we are ready, wait for a response
+		case msg := <-h.cmd:
+			// santa told us something
+			switch msg {
+			case STOP:
+				//log.Stdoutf("Helper.start() -- %v:%v is stopping\n", h.t, h.i);
+				h.status <- STOPPED;
+				return;
+			case WORK:
+				//log.Stdoutf("Helper.start() -- %v:%v is doing work\n", h.t, h.i);
+				h.status <- DONE;
+				time.Sleep(1000 * 100);
+			default:
+				log.Exitf("Helper.start() -- %v:%v received message I don't understand", h.t, h.i, msg)
+			}
 		}
 	}
 }
@@ -148,25 +149,35 @@ func NewHelper(i int, t string) *Helper {
 func NewHelpers(num int, t string) []Helper {
 	helpers := make([]Helper, num);
 	for i := 0; i < len(helpers); i++ {
-		helpers[i] = *NewHelper(i, t);
+		helpers[i] = *NewHelper(i, t)
 	}
 	return helpers;
 }
 
 func WorkHelpers(helpers []Helper) {
-	for _, h := range helpers { h.Work() }
+	for _, h := range helpers {
+		h.Work()
+	}
 }
 func ExhaustHelpers(helpers []Helper) {
-	for _, h := range helpers { h.Exhaust() }
+	for _, h := range helpers {
+		h.Exhaust()
+	}
 }
 func StopHelpers(helpers []Helper) {
-	for _, h := range helpers { h.Stop() }
+	for _, h := range helpers {
+		h.Stop()
+	}
 }
 func JoinHelpers(helpers []Helper) {
-	for _, h := range helpers { h.Join() }
+	for _, h := range helpers {
+		h.Join()
+	}
 }
 func WaitHelpers(helpers []Helper) {
-	for _, h := range helpers { h.Wait() }
+	for _, h := range helpers {
+		h.Wait()
+	}
 }
 
 //
@@ -174,8 +185,8 @@ func WaitHelpers(helpers []Helper) {
 //
 
 type Santa struct {
-	reindeer []Helper;
-	elves []Helper;
+	reindeer	[]Helper;
+	elves		[]Helper;
 }
 
 func (s Santa) DeliverPresents(reindeer []Helper) {
@@ -209,16 +220,16 @@ func (s Santa) DoWork(numRuns int) {
 		wElfNo = 0;
 	};
 	wElvesReset();
-	
+
 	runs := 0;
 	checkDone := func() bool {
 		runs++;
 		return runs >= numRuns;
 	};
-	DOWORK_LOOP: for {
+DOWORK_LOOP:	for {
 		for _, r := range s.reindeer {
 			time.Sleep(1000 * 100);
-			
+
 			if r.IsWaiting() {
 				wReindeer[wReindeerNo] = r;
 				wReindeerNo++;
@@ -226,10 +237,11 @@ func (s Santa) DoWork(numRuns int) {
 			if wReindeerNo == REQUIRED_REINDEER {
 				s.DeliverPresents(wReindeer);
 				wReindeerReset();
-				if checkDone() { break DOWORK_LOOP }
+				if checkDone() {
+					break DOWORK_LOOP
+				}
 			}
 		}
-
 
 		for _, e := range s.elves {
 			time.Sleep(1000 * 100);
@@ -241,7 +253,9 @@ func (s Santa) DoWork(numRuns int) {
 			if wElfNo == REQUIRED_ELVES {
 				s.MakePresents(wElves);
 				wElvesReset();
-				if checkDone() { break DOWORK_LOOP }
+				if checkDone() {
+					break DOWORK_LOOP
+				}
 			}
 		}
 	}
